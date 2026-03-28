@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from src.data.phase_a_data_pipeline import (
+from src.data_code.phase_a_data_pipeline import (
     RATING_COLUMNS,
     build_qa_report,
     clean_items,
