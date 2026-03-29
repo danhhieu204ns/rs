@@ -11,14 +11,14 @@ Da co code va test cho:
 - Phase D: NCF branch (TensorFlow)
 - GPU check utility
 
-Chua co code day du cho:
+Da co code day du cho:
 - Phase E: RNN branch
 - Phase F: Hybrid weighted fusion (5 thanh phan)
 - Phase G: Main evaluation va cold-start final report
 
 ## 2. Cau truc file quan trong
 
-- src/data/phase_a_data_pipeline.py
+- src/data_code/phase_a_data_pipeline.py
 - src/models/cf_branch.py
 - src/models/phase_b_cf_run.py
 - src/models/cbf_branch.py
@@ -63,7 +63,7 @@ Neu gpu_count = 0:
 ### Phase A - Data
 
 Run:
-python src/data/phase_a_data_pipeline.py
+python src/data_code/phase_a_data_pipeline.py
 
 Output du kien:
 - data/raw/ml-100k/...
@@ -149,7 +149,7 @@ Muc tieu:
 ## 7. Quy trinh training day du (hien tai trong code)
 
 Thu tu khuyen nghi:
-1. python src/data/phase_a_data_pipeline.py
+1. python src/data_code/phase_a_data_pipeline.py
 2. python src/models/phase_b_cf_run.py
 3. python src/models/phase_c_cbf_run.py
 4. python src/models/phase_d_ncf_run.py --epochs 5 --batch-size 512
@@ -201,7 +201,7 @@ GPU:
 python src/models/check_gpu.py
 
 Run theo phase:
-python src/data/phase_a_data_pipeline.py
+python src/data_code/phase_a_data_pipeline.py
 python src/models/phase_b_cf_run.py
 python src/models/phase_c_cbf_run.py
 python src/models/phase_d_ncf_run.py --epochs 5 --batch-size 512
@@ -212,3 +212,7 @@ python -m unittest tests.test_cf_branch
 python -m unittest tests.test_cbf_branch
 python -m unittest tests.test_ncf_branch
 python -m unittest discover -s tests -p "test_*.py"
+
+
+## Chay Toan Bo Pipeline
+Ban co the chay toan bo quy trinh tu A den F qua shell script dính kèm: .\run_all_pipeline.ps1.
