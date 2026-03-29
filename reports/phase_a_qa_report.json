@@ -1,0 +1,29 @@
+{
+  "raw_shape": {
+    "users": 943,
+    "movies": 1682,
+    "ratings": 100000
+  },
+  "clean_shape": {
+    "users": 943,
+    "movies": 1682,
+    "ratings": 100000
+  },
+  "expected": {
+    "users": 943,
+    "movies": 1682,
+    "ratings": 100000,
+    "test_ratio": 0.2
+  },
+  "checks": {
+    "users_match_expected": true,
+    "movies_match_expected": true,
+    "ratings_match_expected": true,
+    "no_leakage": true
+  },
+  "split": {
+    "train_size": 80000,
+    "test_size": 20000,
+    "test_ratio": 0.2
+  }
+}

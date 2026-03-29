@@ -1,0 +1,7 @@
+{
+  "rows_scored": 20000,
+  "rnn_score_finite": true,
+  "n_users_train": 943,
+  "n_items_train": 1653,
+  "max_seq_len": 20
+}

@@ -1,0 +1,60 @@
+{
+    "Before Tuning": {
+        "RMSE": 0.958920714108821,
+        "MAE": 0.7708634658776273,
+        "Precision": 0.7262498865801651,
+        "Recall": 0.7282984531392175
+    },
+    "After Tuning": {
+        "Metrics": {
+            "RMSE": 0.9558205247180966,
+            "MAE": 0.7680431463671804,
+            "Precision": 0.7315896865145614,
+            "Recall": 0.7177434030937215
+        },
+        "Best Weights": {
+            "alpha": 0.4,
+            "beta": 0.0,
+            "gamma": 0.1,
+            "delta": 0.2,
+            "epsilon": 0.3
+        }
+    },
+    "Cold Start": {
+        "New Users": {
+            "RMSE": 1.027821154023165,
+            "MAE": 0.858378406205507,
+            "Precision": 0.7733644859813084,
+            "Recall": 0.5022761760242792
+        },
+        "New Items": {
+            "RMSE": 1.5669367570747819,
+            "MAE": 1.3466274406983358,
+            "Precision": 0.45454545454545453,
+            "Recall": 1.0
+        }
+    },
+    "Paper Counterparts": {
+        "Target After Tuning": {
+            "RMSE": 0.7723,
+            "MAE": 0.6018,
+            "Precision": 0.8127,
+            "Recall": 0.7312
+        },
+        "Target Before Tuning": {
+            "RMSE": 0.93,
+            "MAE": 0.73,
+            "Precision": 0.73,
+            "Recall": 0.645
+        },
+        "Cold-start Target New Users": {
+            "Precision": 0.762,
+            "Recall": 0.685
+        },
+        "Cold-start Target New Items": {
+            "MAE": 0.612,
+            "Precision": 0.788,
+            "Recall": 0.702
+        }
+    }
+}

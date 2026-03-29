@@ -1,0 +1,13 @@
+{
+  "RMSE": 0.958920714108821,
+  "MAE": 0.7708634658776274,
+  "Precision": 0.7262498865801651,
+  "Recall": 0.7282984531392175,
+  "fusion_weights": {
+    "alpha (SVD)": 0.2,
+    "beta (ItemBased)": 0.2,
+    "gamma (ContentBased)": 0.2,
+    "delta (NCF)": 0.2,
+    "epsilon (RNN)": 0.2
+  }
+}

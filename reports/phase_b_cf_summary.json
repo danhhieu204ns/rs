@@ -1,0 +1,7 @@
+{
+  "rows_scored": 20000,
+  "svd_score_finite": true,
+  "item_cf_score_finite": true,
+  "user_count_train": 943,
+  "item_count_train": 1653
+}
