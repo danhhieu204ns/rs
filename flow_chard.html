@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLens Hybrid RecSys Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .flow-line {
+            fill: none;
+            stroke: rgba(148, 163, 184, 0.3);
+            stroke-width: 2;
+            stroke-dasharray: 8, 4;
+            animation: dash 30s linear infinite;
+        }
+
+        .flow-line-active {
+            stroke: #38bdf8;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 5px #38bdf8);
+            animation: dash 10s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -500;
+            }
+        }
+
+        .node-dot {
+            fill: #38bdf8;
+            filter: drop-shadow(0 0 3px #38bdf8);
+        }
+
+        .branch-cf { border-left: 4px solid #a855f7; }
+        .branch-cb { border-left: 4px solid #10b981; }
+        .branch-ncf { border-left: 4px solid #f59e0b; }
+        .branch-rnn { border-left: 4px solid #ec4899; }
+
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            background: #1e293b;
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 50;
+            transition: opacity 0.3s;
+            border: 1px solid #334155;
+            pointer-events: none;
+        }
+
+        .node-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                MovieLens Hybrid Recommendation Pipeline
+            </h1>
+            <p class="text-slate-400">Kiến trúc tích hợp Collaborative, Content-Based, Neural & Sequential Filtering</p>
+        </header>
+
+        <div class="relative grid grid-cols-12 gap-8 items-center">
+            
+            <!-- SVG Overlay for connections -->
+            <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" id="flow-svg" style="z-index: -1;">
+                <!-- Lines will be rendered via JS -->
+            </svg>
+
+            <!-- Column 1: Input -->
+            <div class="col-span-2 space-y-12">
+                <div id="node-a" class="node-container relative">
+                    <div class="glass-card p-4 rounded-xl text-center">
+                        <div class="text-3xl mb-2">📊</div>
+                        <h3 class="font-bold text-sm">MovieLens 100K</h3>
+                        <p class="text-[10px] text-slate-400">Raw Data (User/Item/Rating)</p>
+                    </div>
+                    <div class="tooltip">Chứa 100,000 đánh giá từ 943 người dùng cho 1,682 bộ phim.</div>
+                </div>
+            </div>
+
+            <!-- Column 2: Preprocessing -->
+            <div class="col-span-2 space-y-6">
+                <div id="node-b" class="node-container relative">
+                    <div class="glass-card p-4 rounded-xl branch-cf">
+                        <h3 class="font-bold text-sm text-blue-400">Preprocessing</h3>
+                        <ul class="text-[10px] mt-2 space-y-1 text-slate-300">
+                            <li>• Clean metadata</li>
+                            <li>• Split Train/Test 80/20</li>
+                        </ul>
+                    </div>
+                    <div class="tooltip">Làm sạch dữ liệu lỗi và phân chia tập huấn luyện/kiểm thử để đánh giá mô hình.</div>
+                </div>
+            </div>
+
+            <!-- Column 3: Branches (Now with separated CF nodes) -->
+            <div class="col-span-3 space-y-4">
+                <!-- CF Branch 1: SVD -->
+                <div id="node-c1" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg branch-cf">
+                        <h3 class="font-bold text-xs text-purple-400 uppercase tracking-wider">SVD Latent Prediction</h3>
+                        <p class="text-[9px] text-slate-400 mt-1">Matrix Factorization technique</p>
+                    </div>
+                    <div class="tooltip">Phân rã ma trận để tìm các đặc trưng ẩn (latent factors) của người dùng và phim.</div>
+                </div>
+
+                <!-- CF Branch 2: Item Cosine -->
+                <div id="node-c2" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg branch-cf">
+                        <h3 class="font-bold text-xs text-purple-400 uppercase tracking-wider">Item-based Cosine</h3>
+                        <p class="text-[9px] text-slate-400 mt-1">Similarity-based prediction</p>
+                    </div>
+                    <div class="tooltip">Tính toán độ tương đồng giữa các bộ phim dựa trên vector đánh giá của người dùng.</div>
+                </div>
+
+                <!-- Content Based -->
+                <div id="node-d" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg branch-cb">
+                        <h3 class="font-bold text-xs text-emerald-400 uppercase tracking-wider">Content-Based</h3>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="bg-emerald-900/40 px-2 py-1 rounded text-[9px]">TF-IDF Vector</span>
+                        </div>
+                    </div>
+                    <div class="tooltip">Gợi ý dựa trên thuộc tính phim (thể loại, đạo diễn, mô tả).</div>
+                </div>
+
+                <!-- Neural CF -->
+                <div id="node-e" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg branch-ncf">
+                        <h3 class="font-bold text-xs text-orange-400 uppercase tracking-wider">Neural CF</h3>
+                        <div class="flex gap-2 mt-2">
+                            <span class="bg-orange-900/40 px-2 py-1 rounded text-[9px]">Embeddings</span>
+                        </div>
+                    </div>
+                    <div class="tooltip">Sử dụng mạng Neural để học các mối quan hệ phi tuyến giữa User và Item.</div>
+                </div>
+
+                <!-- Sequential RNN -->
+                <div id="node-f" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg branch-rnn">
+                        <h3 class="font-bold text-xs text-pink-400 uppercase tracking-wider">Sequential RNN</h3>
+                        <div class="flex gap-2 mt-2">
+                            <span class="bg-pink-900/40 px-2 py-1 rounded text-[9px]">SimpleRNN</span>
+                        </div>
+                    </div>
+                    <div class="tooltip">Phân tích chuỗi thời gian các phim đã xem để dự báo hành vi tiếp theo.</div>
+                </div>
+            </div>
+
+            <!-- Column 4: Hybrid Fusion -->
+            <div class="col-span-2 space-y-6">
+                <div id="node-g" class="node-container relative">
+                    <div class="glass-card p-4 rounded-xl border-2 border-blue-500/30">
+                        <h3 class="font-bold text-sm text-center">Hybrid Fusion</h3>
+                        <p class="text-[10px] text-slate-400 text-center mt-1">Weighted Ensemble</p>
+                        <div class="mt-3 flex justify-center">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center animate-pulse">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tooltip">Kết hợp trọng số từ các nhánh dự báo để đưa ra kết quả cuối cùng.</div>
+                </div>
+                <div id="node-h" class="node-container relative">
+                    <div class="glass-card p-3 rounded-lg text-center bg-blue-600/20 border-blue-400">
+                        <h3 class="font-bold text-xs text-blue-300">Final Predicted Rating</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 5: Evaluation & Tuning -->
+            <div class="col-span-3 space-y-6">
+                <div id="node-i" class="node-container relative">
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-red-500">
+                        <h3 class="font-bold text-sm text-red-400">Evaluation Metrics</h3>
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <div class="bg-slate-800 p-2 rounded text-[9px] text-center">RMSE / MAE</div>
+                            <div class="bg-slate-800 p-2 rounded text-[9px] text-center">Prec / Recall</div>
+                        </div>
+                    </div>
+                    <div class="tooltip">Đo lường sai số dự báo và độ chính xác của danh sách gợi ý.</div>
+                </div>
+                <div id="node-j" class="node-container relative">
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-yellow-500">
+                        <h3 class="font-bold text-sm text-yellow-400">Optimization</h3>
+                        <p class="text-[10px] text-slate-400 mt-1">Weight Tuning & Cold-start</p>
+                    </div>
+                    <div class="tooltip">Tinh chỉnh trọng số các mô hình và kiểm tra hiệu năng với người dùng mới.</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Control -->
+        <footer class="mt-16 flex justify-between items-center text-slate-500 text-sm border-t border-slate-800 pt-8">
+            <div class="flex gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-blue-400"></div> <span>Dòng dữ liệu chính</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-purple-500"></div> <span>Collaborative Branches</span>
+                </div>
+            </div>
+            <div>Hybrid Recommendation Architecture &copy; 2024</div>
+        </footer>
+    </div>
+
+    <script>
+        const svg = document.getElementById('flow-svg');
+
+        const connections = [
+            { from: 'node-a', to: 'node-b' },
+            { from: 'node-b', to: 'node-c1' },
+            { from: 'node-b', to: 'node-c2' },
+            { from: 'node-b', to: 'node-d' },
+            { from: 'node-b', to: 'node-e' },
+            { from: 'node-b', to: 'node-f' },
+            { from: 'node-c1', to: 'node-g' },
+            { from: 'node-c2', to: 'node-g' },
+            { from: 'node-d', to: 'node-g' },
+            { from: 'node-e', to: 'node-g' },
+            { from: 'node-f', to: 'node-g' },
+            { from: 'node-g', to: 'node-h' },
+            { from: 'node-h', to: 'node-i' },
+            { from: 'node-h', to: 'node-j' },
+        ];
+
+        function drawConnections() {
+            svg.innerHTML = '';
+            const svgRect = svg.getBoundingClientRect();
+
+            connections.forEach(conn => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                
+                if (!fromEl || !toEl) return;
+
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+
+                const startX = fromRect.right - svgRect.left;
+                const startY = fromRect.top + fromRect.height / 2 - svgRect.top;
+                
+                const endX = toRect.left - svgRect.left;
+                const endY = toRect.top + toRect.height / 2 - svgRect.top;
+
+                // Create Bezier Path
+                const cp1x = startX + (endX - startX) / 2;
+                const cp2x = startX + (endX - startX) / 2;
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
+                
+                path.setAttribute('d', d);
+                path.setAttribute('class', 'flow-line');
+                
+                // Active effect for main flows
+                if (conn.from === 'node-a' || conn.to === 'node-g' || conn.from === 'node-g') {
+                    path.classList.add('flow-line-active');
+                }
+
+                svg.appendChild(path);
+
+                // Add end dot
+                const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                dot.setAttribute('cx', endX);
+                dot.setAttribute('cy', endY);
+                dot.setAttribute('r', '3');
+                dot.setAttribute('class', 'node-dot');
+                svg.appendChild(dot);
+            });
+        }
+
+        window.onload = drawConnections;
+        window.onresize = drawConnections;
+        setTimeout(drawConnections, 500);
+    </script>
+</body>
+</html>
