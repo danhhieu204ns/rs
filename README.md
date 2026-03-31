@@ -10,7 +10,7 @@
 
 ## 2. Pipeline phương pháp
 
-![HRS-IU-DL Pipeline](./pipeline.svg)
+![HRS-DL Pipeline](pipeline.jpg)
 
 Xem bản interactive tại [flow_chard.html](./flow_chard.html).
 
