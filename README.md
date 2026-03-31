@@ -10,50 +10,12 @@
 
 ## 2. Pipeline phương pháp
 
-Xem bản HTML tại [flow_chard.html](/C:/Users/Asus/Desktop/rs/flow_chard.html).
+![HRS-IU-DL Pipeline](./pipeline.svg)
 
-<iframe
-  src="./flow_chard.html"
-  title="HRS-DL Pipeline"
-  width="100%"
-  height="720"
-  style="border:1px solid #d0d7de; border-radius:12px;"
-></iframe>
+Xem bản interactive tại [flow_chard.html](./flow_chard.html).
 
-```mermaid
-flowchart LR
-    A[MovieLens 100K] --> B[Phase A: Preprocessing]
-    B --> B1[Clean ratings and item metadata]
-    B1 --> B2[Train/test split 80/20]
 
-    B2 --> C[Phase B: CF]
-    C --> C1[SVD]
-    C --> C2[Item-based cosine]
 
-    B2 --> D[Phase C: CBF]
-    D --> D1[Title + genres]
-    D --> D2[TF-IDF]
-    D --> D3[Content score]
-
-    B2 --> E[Phase D: NCF]
-    E --> E1[User embedding]
-    E --> E2[Item embedding]
-    E --> E3[Dot-product score]
-
-    B2 --> F[Phase E: RNN]
-    F --> F1[Sequential history]
-    F --> F2[SimpleRNN]
-    F --> F3[Sequence-aware score]
-
-    C1 --> G[Phase F: Weighted Fusion]
-    C2 --> G
-    D3 --> G
-    E3 --> G
-    F3 --> G
-
-    G --> H[Final prediction]
-    H --> I[Phase G: Evaluation and tuning]
-```
 
 
 ## 3. Cấu trúc repo
@@ -203,4 +165,3 @@ python -m unittest discover -s tests -p "test_*.py"
 
 
 ## 10. Tài liệu tham chiếu
-
