@@ -4,9 +4,8 @@
 
 - Xây dựng pipeline hybrid recommendation gồm `CF + CBF + NCF + RNN`.
 - Đánh giá theo đúng nhóm metric: `RMSE`, `MAE`, `Precision`, `Recall`.
-- Đối chiếu kết quả reproduction với:
-  - kết quả mục tiêu mà paper công bố
-  - các phương pháp cũ hơn được paper dùng làm baseline so sánh
+- Đối chiếu kết quả model với:
+  - các phương pháp cũ hơn 
 
 ## 2. Pipeline phương pháp
 
@@ -56,7 +55,7 @@ Kết quả lấy từ:
 - [reports/phase_f_fusion_summary.json](/C:/Users/Asus/Desktop/rs/reports/phase_f_fusion_summary.json)
 - [reports/phase_g_eval_and_tuning.json](/C:/Users/Asus/Desktop/rs/reports/phase_g_eval_and_tuning.json)
 
-### 5.1 So với mục tiêu paper
+### 5.1 So Sánh trước và sau khi tuning hyperparameter
 
 | Thiết lập | RMSE | MAE | Precision | Recall |
 | --- | ---: | ---: | ---: | ---: |
@@ -75,8 +74,7 @@ Theo [reports/phase_g_eval_and_tuning.json](/C:/Users/Asus/Desktop/rs/reports/ph
 - `delta = 0.2` cho `NCF`
 - `epsilon = 0.3` cho `RNN`
 
-## 6. So sánh với các phương pháp cũ hơn o
-
+## 6. So sánh với các phương pháp cũ hơn 
 
 ### 6.1 So sánh theo kết quả phương pháp hiện tại
 
@@ -96,20 +94,6 @@ Kết luận ngắn:
 - Ở trạng thái phương pháp hiện tại, mô hình hybrid trong repo mới chỉ vượt rõ một baseline yếu hơn là `CF, SVD, DL (2023)`.
 
 
-### 6.2 So sánh theo kết quả mà paper công bố
-
-| Phương pháp | Năm | RMSE | MAE |
-| --- | ---: | ---: | ---: |
-| CF for RS | 2020 | 0.9170 | - |
-| CF-based SVD and RBM | 2021 | 0.9557 | 0.6699 |
-| SVD | 2022 | 0.9071 | 0.7159 |
-| Matrix Factorization | 2023 | 0.9392 | - |
-| CF, SVD, DL | 2023 | 0.9908 | - |
-| CF | 2023 | 0.9119 | 0.7084 |
-| Hybrid CNN | 2024 | 0.8890 | 0.6770 |
-| HRS-DL theo paper | 2024 | 0.7723 | 0.6018 |
-
- `HRS-DL` vượt toàn bộ baseline cũ hơn về cả `RMSE` lẫn `MAE`, và cũng là mô hình duy nhất trong bảng có báo cáo đồng thời `Precision = 0.8127` và `Recall = 0.7312`.
 
 ## 7. Cold-start
 
@@ -120,10 +104,6 @@ Kết quả cold-start hiện tại:
 | New Users | 1.0278 | 0.8584 | 0.7734 | 0.5023 |
 | New Items | 1.5669 | 1.3466 | 0.4545 | 1.0000 |
 
-Đối chiếu với paper:
-
-- `New Users`: paper báo `Precision 0.762`, `Recall 0.685`
-- `New Items`: paper báo `MAE 0.612`, `Precision 0.788`, `Recall 0.702`
 
 Điểm cần lưu ý:
 
@@ -165,3 +145,4 @@ python -m unittest discover -s tests -p "test_*.py"
 
 
 ## 10. Tài liệu tham chiếu
+https://www.nature.com/articles/s41598-024-79011-z#:~:text=efficiency%2C%20and%20cold,depth%20analysis%20of%20item
