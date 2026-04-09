@@ -61,7 +61,6 @@ def build_ncf_model(n_users: int, n_items: int, embedding_dim: int = 32) -> tf.k
     user_emb = tf.keras.layers.Embedding(n_users, embedding_dim, name="user_embedding")(user_in)
     item_emb = tf.keras.layers.Embedding(n_items, embedding_dim, name="item_embedding")(item_in)
 
-    # Paper-level formulation uses interaction z = U_u^T V_i.
     dot = tf.keras.layers.Dot(axes=-1, name="dot_product")([user_emb, item_emb])
     out = tf.keras.layers.Flatten(name="flatten_output")(dot)
 

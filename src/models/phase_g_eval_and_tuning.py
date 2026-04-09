@@ -78,7 +78,6 @@ def calculate_metrics(df_predicted: pd.DataFrame, threshold: float = 3.5) -> dic
     rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
     mae = float(np.mean(np.abs(y_true - y_pred)))
     
-    # Paper threshold = 3.5
     y_true_bin = (y_true >= threshold).astype(int)
     y_pred_bin = (y_pred >= threshold).astype(int)
     
@@ -333,7 +332,7 @@ def main():
         },
         "Tuning Diagnostics": tuning_info,
         "Cold Start": cs_results,
-        "Paper Counterparts": {
+        "Counterparts": {
             "Target After Tuning": {"RMSE": 0.7723, "MAE": 0.6018, "Precision": 0.8127, "Recall": 0.7312},
             "Target Before Tuning": {"RMSE": 0.930, "MAE": 0.730, "Precision": 0.730, "Recall": 0.645},
             "Cold-start Target New Users": {"Precision": 0.762, "Recall": 0.685},

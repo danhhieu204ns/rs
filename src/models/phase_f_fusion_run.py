@@ -38,7 +38,6 @@ def load_and_merge_scores(paths: Dict[str, Path]) -> pd.DataFrame:
 
 def compute_weighted_fusion(df: pd.DataFrame, alpha=0.2, beta=0.2, gamma=0.2, delta=0.2, epsilon=0.2) -> pd.DataFrame:
     """
-    Paper fusion equation:
     r_hat = a*SVD + b*ItemBased + c*ContentBased + d*Neural + e*RNN
     """
     df["final_score"] = (
