@@ -150,20 +150,26 @@ def predict_rnn_score(artifacts: RNNArtifacts, user_id: int, movie_id: int) -> f
 
 
 def score_test_pairs_rnn(test_ratings: pd.DataFrame, artifacts: RNNArtifacts) -> pd.DataFrame:
-    rows = []
-    # Build a fast mapping for batched predict if needed, 
-    # but sequential processing ensures accurate tracking if timestamps exist.
-    # In test mode, we just use the user's FULL train-time history.
-    
-    for row in test_ratings.itertuples(index=False):
-        user_id = int(row.user_id)
-        movie_id = int(row.movie_id)
-        rows.append(
-            {
-                "user_id": user_id,
-                "movie_id": movie_id,
-                "rating": float(row.rating),
-                "rnn_score": predict_rnn_score(artifacts, user_id, movie_id),
-            }
-        )
-    return pd.DataFrame(rows)
+    scored = test_ratings[["user_id", "movie_id", "rating"]].copy()
+    scored["rnn_score"] = artifacts.global_mean
+
+    known_mask = scored["user_id"].isin(artifacts.user_index) & scored["movie_id"].isin(artifacts.item_index)
+    if not known_mask.any():
+        return scored
+
+    known = scored.loc[known_mask, ["user_id", "movie_id"]].copy()
+    known["uidx"] = known["user_id"].map(artifacts.user_index)
+    known["midx"] = known["movie_id"].map(artifacts.item_index)
+
+    seq_cache: Dict[int, np.ndarray] = {}
+    for uidx in known["uidx"].drop_duplicates().tolist():
+        history = artifacts.user_histories.get(uidx, [])[-artifacts.max_seq_len:]
+        padded_seq = history + [0] * (artifacts.max_seq_len - len(history))
+        seq_cache[int(uidx)] = np.asarray(padded_seq, dtype=np.int32)
+
+    seq_batch = np.stack([seq_cache[int(uidx)] for uidx in known["uidx"].tolist()], axis=0)
+    item_batch = known["midx"].to_numpy(dtype=np.int32)
+
+    preds = artifacts.model.predict([seq_batch, item_batch], verbose=0, batch_size=2048).reshape(-1)
+    scored.loc[known_mask, "rnn_score"] = preds.astype(np.float32)
+    return scored

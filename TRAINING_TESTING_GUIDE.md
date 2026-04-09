@@ -136,6 +136,53 @@ Tieu chi pass nhanh:
 - ncf_score_finite = true
 - train duoc va predict duoc
 
+### Phase E - RNN
+
+Run:
+python src/models/phase_e_rnn_run.py --epochs 5 --batch-size 512
+
+Output du kien:
+- reports/phase_e_rnn_scores.csv
+- reports/phase_e_rnn_summary.json
+
+Test phase E:
+python -m unittest tests.test_rnn_branch
+
+Tieu chi pass nhanh:
+- rows_scored = so dong test
+- rnn_score_finite = true
+
+### Phase F - Fusion baseline
+
+Run:
+python src/models/phase_f_fusion_run.py --alpha 0.2 --beta 0.2 --gamma 0.2 --delta 0.2 --epsilon 0.2
+
+Output du kien:
+- reports/phase_f_fusion_results.csv
+- reports/phase_f_fusion_summary.json
+
+Test phase F:
+python -m unittest tests.test_fusion
+
+### Phase G - Eval + Tuning fusion
+
+Run:
+python src/models/phase_g_eval_and_tuning.py --holdout-ratio 0.2 --grid-step 0.1 --random-trials 3000 --objective rmse
+
+Output du kien:
+- reports/phase_g_eval_and_tuning.json
+- reports/phase_g_tuned_predictions.csv
+
+### Phase H - Model comparison table
+
+Run:
+python src/models/phase_h_model_comparison.py
+
+Output du kien:
+- reports/phase_h_model_comparison.csv
+- reports/phase_h_model_comparison.md
+- reports/phase_h_model_comparison.json
+
 ## 6. Test tong the (hien tai)
 
 Chay full unit test:
@@ -153,7 +200,11 @@ Thu tu khuyen nghi:
 2. python src/models/phase_b_cf_run.py
 3. python src/models/phase_c_cbf_run.py
 4. python src/models/phase_d_ncf_run.py --epochs 5 --batch-size 512
-5. python -m unittest discover -s tests -p "test_*.py"
+5. python src/models/phase_e_rnn_run.py --epochs 5 --batch-size 512
+6. python src/models/phase_f_fusion_run.py --alpha 0.2 --beta 0.2 --gamma 0.2 --delta 0.2 --epsilon 0.2
+7. python src/models/phase_g_eval_and_tuning.py --holdout-ratio 0.2 --grid-step 0.1 --random-trials 3000 --objective rmse
+8. python src/models/phase_h_model_comparison.py
+9. python -m unittest discover -s tests -p "test_*.py"
 
 Danh sach artifact can co sau khi chay:
 - reports/phase_a_qa_report.json
@@ -163,6 +214,13 @@ Danh sach artifact can co sau khi chay:
 - reports/phase_c_cbf_summary.json
 - reports/phase_d_ncf_scores.csv
 - reports/phase_d_ncf_summary.json
+- reports/phase_e_rnn_scores.csv
+- reports/phase_e_rnn_summary.json
+- reports/phase_f_fusion_results.csv
+- reports/phase_f_fusion_summary.json
+- reports/phase_g_eval_and_tuning.json
+- reports/phase_g_tuned_predictions.csv
+- reports/phase_h_model_comparison.csv
 
 ## 8. Quy trinh training full theo paper (khi hoan tat cac phase con lai)
 
@@ -205,14 +263,30 @@ python src/data_code/phase_a_data_pipeline.py
 python src/models/phase_b_cf_run.py
 python src/models/phase_c_cbf_run.py
 python src/models/phase_d_ncf_run.py --epochs 5 --batch-size 512
+python src/models/phase_e_rnn_run.py --epochs 5 --batch-size 512
+python src/models/phase_f_fusion_run.py --alpha 0.2 --beta 0.2 --gamma 0.2 --delta 0.2 --epsilon 0.2
+python src/models/phase_g_eval_and_tuning.py --holdout-ratio 0.2 --grid-step 0.1 --random-trials 3000 --objective rmse
+python src/models/phase_h_model_comparison.py
 
 Test:
 python -m unittest tests.test_phase_a_data_pipeline
 python -m unittest tests.test_cf_branch
 python -m unittest tests.test_cbf_branch
 python -m unittest tests.test_ncf_branch
+python -m unittest tests.test_rnn_branch
+python -m unittest tests.test_fusion
 python -m unittest discover -s tests -p "test_*.py"
 
 
 ## Chay Toan Bo Pipeline
-Ban co the chay toan bo quy trinh tu A den F qua shell script dính kèm: .\run_all_pipeline.ps1.
+Ban co the chay toan bo quy trinh tu A den H qua shell script: .\run_all_pipeline.ps1
+
+Lenh mau:
+- Chay toan bo, bo qua cache output cu:
+	.\run_all_pipeline.ps1 -Force
+- Chay lai tu Phase D tro di:
+	.\run_all_pipeline.ps1 -FromPhase D -Force
+- Chay lai tu Phase D voi epoch lon hon:
+	.\run_all_pipeline.ps1 -FromPhase D -Force -NcfEpochs 30 -RnnEpochs 30 -BatchSize 512
+- Chay lai tuning fusion nhieu cau hinh hon:
+	.\run_all_pipeline.ps1 -FromPhase G -Force -FusionGridStep 0.05 -FusionRandomTrials 8000

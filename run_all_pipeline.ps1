@@ -1,87 +1,105 @@
-# Run all phases to generate full results for the hybrid recommendation model
-# Ensure your virtual environment is active before running this script
+param(
+    [switch]$Force,
+    [ValidateSet("A", "B", "C", "D", "E", "F", "G", "H")]
+    [string]$FromPhase = "A",
+    [int]$NcfEpochs = 10,
+    [int]$RnnEpochs = 10,
+    [int]$BatchSize = 512,
+    [double]$FusionHoldoutRatio = 0.2,
+    [double]$FusionGridStep = 0.1,
+    [int]$FusionRandomTrials = 3000
+)
 
 $ErrorActionPreference = "Stop"
 $PYTHON_EXEC = ".\.venv\Scripts\python.exe"
+$PHASE_ORDER = @{ A = 1; B = 2; C = 3; D = 4; E = 5; F = 6; G = 7; H = 8 }
+
+function Should-RunPhase {
+    param([string]$Phase)
+    return $PHASE_ORDER[$Phase] -ge $PHASE_ORDER[$FromPhase]
+}
+
+function Test-AllOutputsExist {
+    param([string[]]$Paths)
+    foreach ($p in $Paths) {
+        if (-not (Test-Path $p)) {
+            return $false
+        }
+    }
+    return $true
+}
+
+function Invoke-Phase {
+    param(
+        [string]$Phase,
+        [string]$Title,
+        [string[]]$Outputs,
+        [scriptblock]$Runner
+    )
+
+    Write-Host "`n[$Phase] $Title" -ForegroundColor Yellow
+
+    if (-not (Should-RunPhase -Phase $Phase)) {
+        Write-Host " -> Skipped: not selected by -FromPhase $FromPhase" -ForegroundColor DarkGray
+        return
+    }
+
+    if ((Test-AllOutputsExist -Paths $Outputs) -and (-not $Force)) {
+        Write-Host " -> Skipped: outputs already exist (use -Force to rerun)." -ForegroundColor DarkGray
+        return
+    }
+
+    & $Runner
+    if ($LASTEXITCODE -ne 0) {
+        throw "Phase $Phase failed: $Title"
+    }
+
+    Write-Host " -> Completed" -ForegroundColor Green
+}
 
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host " RUNNING HRS-IU-DL PIPELINE" -ForegroundColor Cyan
 Write-Host "=======================================================" -ForegroundColor Cyan
+Write-Host " FromPhase=$FromPhase | Force=$Force | NcfEpochs=$NcfEpochs | RnnEpochs=$RnnEpochs | BatchSize=$BatchSize" -ForegroundColor Cyan
 
-# -------------------------------------------------------------------------
-# PHASE A: Data Ingestion and Pipeline 
-# -------------------------------------------------------------------------
-Write-Host "`n[1/6] Phase A: Data Pipeline..." -ForegroundColor Yellow
-if (Test-Path "data/processed/ratings_train.csv") {
-    Write-Host " -> Skipped: Filtered data already exists in /data/processed/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/data_code/phase_a_data_pipeline.py
-    if ($LASTEXITCODE -ne 0) { throw "Phase A Failed!" }
-    Write-Host " -> Phase A Completed. Filtered data saved to /data/processed/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "A" -Title "Phase A: Data Pipeline" `
+    -Outputs @("data/processed/ratings_train.csv", "data/processed/ratings_test.csv", "reports/phase_a_qa_report.json") `
+    -Runner { & $PYTHON_EXEC src/data_code/phase_a_data_pipeline.py }
 
-# -------------------------------------------------------------------------
-# PHASE B: Collaborative Filtering Branch (SVD & ItemBased)
-# -------------------------------------------------------------------------
-Write-Host "`n[2/6] Phase B: CF Branch..." -ForegroundColor Yellow
-if (Test-Path "reports/phase_b_cf_scores.csv") {
-    Write-Host " -> Skipped: Reports already exist in /reports/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/models/phase_b_cf_run.py
-    if ($LASTEXITCODE -ne 0) { throw "Phase B Failed!" }
-    Write-Host " -> Phase B Completed. Reports saved to /reports/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "B" -Title "Phase B: CF Branch" `
+    -Outputs @("reports/phase_b_cf_scores.csv", "reports/phase_b_cf_summary.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_b_cf_run.py }
 
-# -------------------------------------------------------------------------
-# PHASE C: Content-Based Filtering Branch (TF-IDF)
-# -------------------------------------------------------------------------
-Write-Host "`n[3/6] Phase C: CBF Branch..." -ForegroundColor Yellow
-if (Test-Path "reports/phase_c_cbf_scores.csv") {
-    Write-Host " -> Skipped: Reports already exist in /reports/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/models/phase_c_cbf_run.py
-    if ($LASTEXITCODE -ne 0) { throw "Phase C Failed!" }
-    Write-Host " -> Phase C Completed. Reports saved to /reports/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "C" -Title "Phase C: CBF Branch" `
+    -Outputs @("reports/phase_c_cbf_scores.csv", "reports/phase_c_cbf_summary.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_c_cbf_run.py }
 
-# -------------------------------------------------------------------------
-# PHASE D: Neural Collaborative Filtering Branch 
-# -------------------------------------------------------------------------
-Write-Host "`n[4/6] Phase D: NCF Branch..." -ForegroundColor Yellow
-if (Test-Path "reports/phase_d_ncf_scores.csv") {
-    Write-Host " -> Skipped: Reports already exist in /reports/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/models/phase_d_ncf_run.py
-    if ($LASTEXITCODE -ne 0) { throw "Phase D Failed!" }
-    Write-Host " -> Phase D Completed. Reports saved to /reports/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "D" -Title "Phase D: NCF Branch" `
+    -Outputs @("reports/phase_d_ncf_scores.csv", "reports/phase_d_ncf_summary.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_d_ncf_run.py --epochs $NcfEpochs --batch-size $BatchSize }
 
-# -------------------------------------------------------------------------
-# PHASE E: Recurrent Neural Network Branch
-# -------------------------------------------------------------------------
-Write-Host "`n[5/6] Phase E: RNN Branch..." -ForegroundColor Yellow
-if (Test-Path "reports/phase_e_rnn_scores.csv") {
-    Write-Host " -> Skipped: Reports already exist in /reports/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/models/phase_e_rnn_run.py --batch-size 128
-    if ($LASTEXITCODE -ne 0) { throw "Phase E Failed!" }
-    Write-Host " -> Phase E Completed. Reports saved to /reports/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "E" -Title "Phase E: RNN Branch" `
+    -Outputs @("reports/phase_e_rnn_scores.csv", "reports/phase_e_rnn_summary.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_e_rnn_run.py --epochs $RnnEpochs --batch-size $BatchSize }
 
-# -------------------------------------------------------------------------
-# PHASE F: Fusion & Evaluation
-# -------------------------------------------------------------------------
-Write-Host "`n[6/6] Phase F: Fusion Model (Baseline Params)..." -ForegroundColor Yellow
-# Phase F is usually fast and we might want to re-run it with different params, 
-# but per your request, we can skip if it exists. Remove the IF condition here if you want F to always run.
-if (Test-Path "reports/phase_f_fusion_results.csv") {
-    Write-Host " -> Skipped: Final reports already exist in /reports/" -ForegroundColor DarkGray
-} else {
-    & $PYTHON_EXEC src/models/phase_f_fusion_run.py --alpha 0.2 --beta 0.2 --gamma 0.2 --delta 0.2 --epsilon 0.2
-    if ($LASTEXITCODE -ne 0) { throw "Phase F Failed!" }
-    Write-Host " -> Phase F Completed. Final reports available in /reports/" -ForegroundColor Green
-}
+Invoke-Phase -Phase "F" -Title "Phase F: Fusion Baseline" `
+    -Outputs @("reports/phase_f_fusion_results.csv", "reports/phase_f_fusion_summary.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_f_fusion_run.py --alpha 0.2 --beta 0.2 --gamma 0.2 --delta 0.2 --epsilon 0.2 }
+
+Invoke-Phase -Phase "G" -Title "Phase G: Eval and Tuning" `
+    -Outputs @("reports/phase_g_eval_and_tuning.json", "reports/phase_g_tuned_predictions.csv") `
+    -Runner {
+        & $PYTHON_EXEC src/models/phase_g_eval_and_tuning.py `
+            --holdout-ratio $FusionHoldoutRatio `
+            --grid-step $FusionGridStep `
+            --random-trials $FusionRandomTrials `
+            --objective rmse
+    }
+
+Invoke-Phase -Phase "H" -Title "Phase H: Model Comparison Table" `
+    -Outputs @("reports/phase_h_model_comparison.csv", "reports/phase_h_model_comparison.md", "reports/phase_h_model_comparison.json") `
+    -Runner { & $PYTHON_EXEC src/models/phase_h_model_comparison.py }
 
 Write-Host "`n=======================================================" -ForegroundColor Cyan
-Write-Host " Pipeline Execution Finished Successfully!" -ForegroundColor Cyan
+Write-Host " Pipeline execution finished successfully" -ForegroundColor Cyan
 Write-Host "=======================================================" -ForegroundColor Cyan

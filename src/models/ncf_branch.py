@@ -104,16 +104,16 @@ def predict_ncf_score(artifacts: NCFArtifacts, user_id: int, movie_id: int) -> f
 
 
 def score_test_pairs_ncf(test_ratings: pd.DataFrame, artifacts: NCFArtifacts) -> pd.DataFrame:
-    rows = []
-    for row in test_ratings.itertuples(index=False):
-        user_id = int(row.user_id)
-        movie_id = int(row.movie_id)
-        rows.append(
-            {
-                "user_id": user_id,
-                "movie_id": movie_id,
-                "rating": float(row.rating),
-                "ncf_score": predict_ncf_score(artifacts, user_id, movie_id),
-            }
-        )
-    return pd.DataFrame(rows)
+    scored = test_ratings[["user_id", "movie_id", "rating"]].copy()
+    scored["ncf_score"] = artifacts.global_mean
+
+    known_mask = scored["user_id"].isin(artifacts.user_index) & scored["movie_id"].isin(artifacts.item_index)
+    if known_mask.any():
+        known = scored.loc[known_mask, ["user_id", "movie_id"]]
+        x_user = known["user_id"].map(artifacts.user_index).to_numpy(dtype=np.int32)
+        x_item = known["movie_id"].map(artifacts.item_index).to_numpy(dtype=np.int32)
+
+        preds = artifacts.model.predict([x_user, x_item], verbose=0, batch_size=4096).reshape(-1)
+        scored.loc[known_mask, "ncf_score"] = preds.astype(np.float32)
+
+    return scored
