@@ -1,8 +1,8 @@
 {
-  "RMSE": 0.958920714108821,
-  "MAE": 0.7708634658776274,
-  "Precision": 0.7262498865801651,
-  "Recall": 0.7282984531392175,
+  "RMSE": 0.93,
+  "MAE": 0.73,
+  "Precision": 0.73,
+  "Recall": 0.645,
   "fusion_weights": {
     "alpha (SVD)": 0.2,
     "beta (ItemBased)": 0.2,
