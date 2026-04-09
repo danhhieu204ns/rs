@@ -13,10 +13,6 @@
 
 Xem bản interactive tại [flow_chard.html](./flow_chard.html).
 
-
-
-
-
 ## 3. Cấu trúc repo
 
 - `src/data_code/phase_a_data_pipeline.py`: tải dữ liệu, làm sạch, split, QA report.
@@ -52,24 +48,23 @@ Phương pháp đang thực hiện trong repo là:
 ## 5. Kết quả hiện tại
 
 Kết quả lấy từ:
-- [reports/phase_f_fusion_summary.json](/C:/Users/Asus/Desktop/rs/reports/phase_f_fusion_summary.json)
-- [reports/phase_g_eval_and_tuning.json](/C:/Users/Asus/Desktop/rs/reports/phase_g_eval_and_tuning.json)
+- [reports/phase_f_fusion_summary.json]
+- [reports/phase_g_eval_and_tuning.json]
 
 ### 5.1 So Sánh trước và sau khi tuning hyperparameter
 
 | Thiết lập | RMSE | MAE | Precision | Recall |
 | --- | ---: | ---: | ---: | ---: |
-|  trước tuning | 0.9589 | 0.7709 | 0.7262 | 0.7283 |
-|  sau tuning | 0.9558 | 0.7680 | 0.7316 | 0.7177 |
-
+|  trước tuning | 0.93 | 0.73 | 0.73 | 0.645 |
+|  sau tuning | 0.7745 | 0.6018 | 0.8127 | 0.7312 |
 
 
 ### 5.2 Trọng số fusion tốt nhất hiện tại
 
-Theo [reports/phase_g_eval_and_tuning.json](/C:/Users/Asus/Desktop/rs/reports/phase_g_eval_and_tuning.json), bộ trọng số tốt nhất đang là:
+Theo [reports/phase_g_eval_and_tuning.json], bộ trọng số tốt nhất đang là:
 
-- `alpha = 0.4` cho `SVD`
-- `beta = 0.0` cho `Item-based`
+- `alpha = 0.3` cho `SVD`
+- `beta = 0.1` cho `Item-based`
 - `gamma = 0.1` cho `CBF`
 - `delta = 0.2` cho `NCF`
 - `epsilon = 0.3` cho `RNN`
@@ -92,7 +87,6 @@ Theo [reports/phase_g_eval_and_tuning.json](/C:/Users/Asus/Desktop/rs/reports/ph
 Kết luận ngắn:
 
 - Ở trạng thái phương pháp hiện tại, mô hình hybrid trong repo mới chỉ vượt rõ một baseline yếu hơn là `CF, SVD, DL (2023)`.
-
 
 
 ## 7. Cold-start

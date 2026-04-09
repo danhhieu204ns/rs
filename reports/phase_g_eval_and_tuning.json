@@ -13,11 +13,11 @@
             "Recall": 0.7312
         },
         "Best Weights": {
-            "alpha": 0.2,
+            "alpha": 0.3,
             "beta": 0.1,
-            "gamma": 0.14,
-            "delta": 0.36,
-            "epsilon": 0.2
+            "gamma": 0.1,
+            "delta": 0.2,
+            "epsilon": 0.3
         }
     },
     "Full Data Reference": {
