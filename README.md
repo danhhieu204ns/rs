@@ -165,3 +165,4 @@ python -m unittest discover -s tests -p "test_*.py"
 
 
 ## 10. Tài liệu tham chiếu
+https://www.nature.com/articles/s41598-024-79011-z#:~:text=efficiency%2C%20and%20cold,depth%20analysis%20of%20item
